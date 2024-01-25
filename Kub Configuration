@@ -1,0 +1,139 @@
+Setting Up Kub:
+	sudo yum -y install yum-utils
+	sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+	sudo yum -y install kubelet kubeadm kubectl docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin cri-o
+
+	Run as root
+	containerd config default | tee /etc/containerd/config.toml
+
+	vi /etc/containerd/config.toml
+	Update ->     SystemdCgroup = true
+
+	non root User:
+
+	sudo systemctl start docker && systemctl enable docker
+	sudo systemctl start kubelet && systemctl enable kubelet
+	sudo systemctl start containerd && systemctl enable containerd
+
+	kubeadm config images pull
+
+	sudo kubeadm init --apiserver-advertise-address=10.0.15.128 --pod-network-cidr=10.244.0.0/16 
+
+Funnel:
+	mkdir /opt/software/KUBE/
+	wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+	kubectl apply -f kube-flannel.yml
+
+	export KUBECONFIG=/etc/kubernetes/admin.conf
+
+Understanding which pods runns where.
+	kubectl get nodes
+	kubectl get pods --all-namespaces
+	kubectl get pods -A --field-selector spec.nodeName=was-host1
+
+Imp Folders:
+	/etc/kubernetes/
+	/var/lib/kubelet/
+	/var/log/containers/
+
+Uninstall Kube Docker and Containerd:
+	systemctl restart containerd kubelet docker
+	systemctl disable containerd kubelet docker
+	sudo killall kube-apiserver kube-controller-manager  kube-proxy kube-scheduler etcd containerd containerd-shim-runc-v2 dockerd cri-o
+	sudo yum -y remove kubelet kubeadm kubectl docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+	sudo rm -rf /var/lib/etcd/ /etc/kubernetes/ /var/lib/kubelet/ /var/log/containers/ ~/.kube/* /var/log/containers/ 
+	sudo reboot
+
+Changing Worker Name
+
+	kubectl get nodes --show-labels
+	kubectl label nodes <node-name> node-role.kubernetes.io/worker-node1= --overwrite
+
+
+Simple Pod:
+
+	kubectl create deployment nginx --image=nginx
+	kubectl describe deployment nginx
+	kubectl create service nodeport nginx --tcp=80:80
+
+
+Control the pod:
+
+	Creating a pod:
+	===========
+	apiVersion: v1
+	kind: Pod
+	metadata:
+	  name: mypod
+	spec:
+	  containers:
+	  - name: mycontainer
+		image: nginx
+
+	===========
+	kubectl apply -f pod.yaml
+	kubectl get pods
+	kubectl describe pod kube-controller-manager-was-host1 -n kube-system
+	kubectl logs mypod
+	kubectl exec -it mypod -- /bin/bash
+
+
+Dashboard:
+cat /opt/software/KUBE/accounts/dashboard-adduser.yaml
+
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+
+kubectl apply -f dashboard-adduser.yaml
+
+/opt/software/KUBE/accounts/dashboard-user-cls.yaml
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kubernetes-dashboard
+
+
+kubectl -n kubernetes-dashboard create token admin-user
+
+wget https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+
+mv recommended.yaml dashboard.yaml
+
+kubectl apply -f dashboard.yaml
+
+
+
+
+
+wget https://raw.githubusercontent.com/techiescamp/kubeadm-scripts/main/manifests/metrics-server.yaml
+
+kubectl apply -f metrics-server.yaml
+
+
+kubectl top pods -A
+kubectl top nodes
+
+
+
+Nginx test Server
+
+kubectl create deployment nginx --image=nginx
+
+kubectl edit deployment nginx
+
+
+kubectl create service nodeport nginx --tcp=80:80
