@@ -1,0 +1,25 @@
+mkdir /opt/software/crc/
+cd /opt/software/crc/
+
+Download Open Shift *Note a newer version of kube exists look go down the the upgrade section
+wget https://mirror.openshift.com/pub/openshift-v4/clients/crc/latest/crc-linux-amd64.tar.xz
+
+Download Pull Secret:
+https://console.redhat.com/openshift/install/crc/installer-provisioned?intcmp=701f20000012ngPAAQ&extIdCarryOver=true&sc_cid=701f2000001OH7JAAW
+
+
+tar -zxvf crc-linux-amd64.tar.xz
+
+crc setup
+crc start -p /<path-to-the-pull-secret-file>/pull-secret.txt
+
+#Setup ENV
+crc oc-env
+eval $(crc oc-env)
+
+
+#GUI Console
+crc console
+
+Updating CRC - You need to re-download the latest version of libvirt (4gb image) again.
+wget https://developers.redhat.com/content-gateway/file/pub/openshift-v4/clients/crc/2.31.0/crc-linux-amd64.tar.xz
