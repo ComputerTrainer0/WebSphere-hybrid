@@ -1,0 +1,11 @@
+
+Download Transformation Advisor
+
+https://www.ibm.com/support/pages/ibm-cloud-transformation-advisor-downloads
+
+
+Bulding Containder Maual_modernization
+
+docker build --no-cache -t "mod-resort" -f Containerfile .
+
+docker run -d -p 9080:9080 mod-resort
