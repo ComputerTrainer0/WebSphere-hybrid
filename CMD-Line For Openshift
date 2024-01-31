@@ -1,0 +1,54 @@
+
+vi Deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example
+  namespace: project1
+spec:
+  selector:
+    matchLabels:
+      app: hello-openshift
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: hello-openshift
+    spec:
+      containers:
+        - name: hello-openshift
+          image: openshift/hello-openshift
+          ports:
+            - containerPort: 8080
+
+
+vi Service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: example
+  namespace: project1
+spec:
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: hello-openshift
+  type: ClusterIP
+
+vi Route.yaml
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: example
+  namespace: project1
+spec:
+  port:
+    targetPort: 8080
+  to:
+    kind: Service
+    name: example
+
+Generate URL
+echo http://$(oc get route example --template='{{ .spec.host }}')
