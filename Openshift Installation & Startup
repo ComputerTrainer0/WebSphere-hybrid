@@ -23,3 +23,5 @@ crc console
 
 Updating CRC - You need to re-download the latest version of libvirt (4gb image) again.
 wget https://developers.redhat.com/content-gateway/file/pub/openshift-v4/clients/crc/2.31.0/crc-linux-amd64.tar.xz
+
+For Lab Files uee this location https://github.com/IBMTechSales/openshift-workshop-was
