@@ -2,27 +2,28 @@ Login to OC
 
 oc login --token=sha256~CiWLJR9K9oVAs1PCR4bDYp3_K5oubEuTxmunz0 --server=https://api.crc.testing:6443
 
-oc new-project apps-was
+oc new-project apps
 
-podman build --tag default-route-openshift-image-registry.apps-crc.testing/apps-was/cos-was .
+podman build --tag default-route-openshift-image-registry.apps-crc.testing/apps/cos .
 
 podman images
 
 oc get route default-route -n openshift-image-registry
 
-podman login -u ocadmin -p $(oc whoami -t) default-route-openshift-image-registry.apps-crc.testing --tls-verify=false
+podman login -u ocaadmin -p $(oc whoami -t) default-route-openshift-image-registry.apps-crc.testing --tls-verify=false
 
-podman push default-route-openshift-image-registry.apps-crc.testing/apps-was/cos-was
+podman push default-route-openshift-image-registry.apps-crc.testing/apps/cos --tls-verify=false
 
-oc get images | grep apps-was/cos-was
+oc get images | grep apps/cos
 
 #Deployment
 
-oc get imagestreams -n apps-was
+oc get imagestreams -n apps
 
 oc project
 
-oc apply -f deploy
+~/.crc/bin/oc/oc kustomize deploy/overlay-apps
 
-echo http://$(oc get route cos-was --template='{{ .spec.host}}')/CustomerOrderServicesWeb
+~/.crc/bin/oc/oc apply -k  deploy/overlay-apps
 
+echo http://$(oc get route cos --template='{{ .spec.host}}')/CustomerOrderServicesWeb
